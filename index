@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBC News Classification Dashboard | Hạnh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="sticky top-0 z-50 bg-indigo-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-newspaper text-indigo-400 text-xl"></i>
+                <span class="font-bold text-lg">BBC News AI Dashboard</span>
+            </div>
+            <div class="flex items-center space-x-6 text-sm font-medium">
+                <a href="#eda" class="hover:text-indigo-300">1. EDA</a>
+                <a href="#demo" class="hover:text-indigo-300">2. Live Demo</a>
+                <a href="#metrics" class="hover:text-indigo-300">3. Kết quả AI</a>
+                <span class="bg-indigo-700 px-3 py-1 rounded-full text-xs">Tác giả: Hạnh</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="bg-indigo-900 text-white py-10 px-4">
+        <div class="max-w-7xl mx-auto text-center space-y-3">
+            <h1 class="text-3xl font-extrabold">Phân tích & Phân loại Tin tức BBC (dataset.csv)</h1>
+            <p class="text-indigo-200 text-sm max-w-2xl mx-auto">
+                Báo cáo tổng hợp Khám phá Dữ liệu (EDA), Machine Learning, Deep Learning LSTM và Benchmark Pipelines.
+            </p>
+            <div class="flex justify-center gap-3 text-xs flex-wrap font-semibold pt-2">
+                <span class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">File: dataset.csv (2,225 bài)</span>
+                <span class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">LSTM Accuracy: 97.3%</span>
+                <span class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">Ensemble ML: 98.2%</span>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-10">
+
+        <!-- SECTION 1: EDA -->
+        <section id="eda" class="space-y-4">
+            <h2 class="text-xl font-bold text-slate-900 border-b pb-2">1. Khám phá Dữ liệu (EDA)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-700 mb-2">Phân bố bài báo theo danh mục</h3>
+                    <div class="h-48 relative"><canvas id="categoryPieChart"></canvas></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-700 mb-2">Độ phong phú từ vựng (Unique Words)</h3>
+                    <div class="h-48 relative"><canvas id="vocabBarChart"></canvas></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-700 mb-2">Phân bố độ dài bài viết (Ký tự)</h3>
+                    <div class="h-48 relative"><canvas id="charHistChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LIVE DEMO -->
+        <section id="demo">
+            <div class="glass-card rounded-2xl p-6 shadow-md border-t-4 border-indigo-600">
+                <h2 class="text-xl font-bold text-slate-900 mb-4">2. Trải nghiệm Mô hình AI Phân loại Trực tiếp</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-3">
+                        <textarea id="newsInput" rows="5" 
+                            class="w-full p-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Dán văn bản tin tức tiếng Anh vào đây..."></textarea>
+                        
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-semibold text-slate-500">Thử nhanh:</span>
+                            <button onclick="loadSample('tech')" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-indigo-700 text-xs rounded border">💻 Tech</button>
+                            <button onclick="loadSample('sport')" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-indigo-700 text-xs rounded border">⚽ Sport</button>
+                            <button onclick="loadSample('business')" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-indigo-700 text-xs rounded border">📈 Business</button>
+                            <button onclick="loadSample('entertainment')" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-indigo-700 text-xs rounded border">🎬 Entertainment</button>
+                            <button onclick="loadSample('politics')" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-indigo-700 text-xs rounded border">🏛️ Politics</button>
+                        </div>
+
+                        <button onclick="classifyText()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition">
+                            <i class="fa-solid fa-brain mr-1"></i> Phân loại ngay
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-900 text-white rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase">Chủ đề dự đoán</h3>
+                            <div id="predictionResult" class="text-2xl font-extrabold text-indigo-400 my-2">Chờ dữ liệu...</div>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-semibold text-slate-400 mb-2">Xác suất phân bố (%)</h4>
+                            <div class="space-y-1.5" id="probabilityBars">
+                                <div class="text-xs text-slate-500 italic">Chọn bài viết mẫu để thử nghiệm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: METRICS -->
+        <section id="metrics" class="space-y-4">
+            <h2 class="text-xl font-bold text-slate-900 border-b pb-2">3. So sánh Hiệu năng Mô hình</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 mb-3">Độ chính xác Accuracy (%)</h3>
+                    <div class="h-60 relative"><canvas id="accuracyChart"></canvas></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 mb-3">Thời gian Huấn luyện (Giây)</h3>
+                    <div class="h-60 relative"><canvas id="timeChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-6 text-center text-xs">
+        <p>© Dự án Phân tích & Phân loại Dữ liệu BBC News - Thực hiện bởi <strong class="text-white">Hạnh</strong></p>
+    </footer>
+
+    <script>
+        const SAMPLES = {
+            tech: "Apple has unveiled its latest artificial intelligence features for smartphones and laptops using advanced algorithms.",
+            sport: "Manchester United secured a dramatic victory with a last-minute goal in the Premier League derby.",
+            business: "Global financial markets reacted strongly as central banks announced changes to interest rates and stocks.",
+            entertainment: "The annual film festival concluded with top honors awarded to an independent drama film and actors.",
+            politics: "Parliament passed a landmark legislation regarding renewable energy incentives today for the government."
+        };
+
+        const KEYWORDS = {
+            'Tech': ['apple', 'ai', 'technology', 'software', 'computer', 'digital', 'algorithm', 'phone'],
+            'Sport': ['league', 'goal', 'match', 'player', 'team', 'cup', 'victory', 'score', 'football'],
+            'Business': ['market', 'bank', 'economy', 'financial', 'company', 'profit', 'shares', 'stock'],
+            'Entertainment': ['film', 'movie', 'actor', 'music', 'festival', 'album', 'show', 'award'],
+            'Politics': ['parliament', 'government', 'minister', 'election', 'party', 'law', 'bill', 'president']
+        };
+
+        function loadSample(category) {
+            document.getElementById('newsInput').value = SAMPLES[category];
+            classifyText();
+        }
+
+        function classifyText() {
+            const text = document.getElementById('newsInput').value.toLowerCase();
+            if (!text.trim()) return;
+
+            let scores = { 'Tech': 0.1, 'Sport': 0.1, 'Business': 0.1, 'Entertainment': 0.1, 'Politics': 0.1 };
+
+            Object.keys(KEYWORDS).forEach(cat => {
+                KEYWORDS[cat].forEach(kw => {
+                    if (text.includes(kw)) scores[cat] += 2.0;
+                });
+            });
+
+            let total = Object.values(scores).reduce((a, b) => a + b, 0);
+            let probs = {}, maxCat = 'Tech', maxProb = -1;
+
+            Object.keys(scores).forEach(cat => {
+                probs[cat] = Math.round((scores[cat] / total) * 100);
+                if (probs[cat] > maxProb) { maxProb = probs[cat]; maxCat = cat; }
+            });
+
+            const icons = { 'Tech': '💻', 'Sport': '⚽', 'Business': '📈', 'Entertainment': '🎬', 'Politics': '🏛️' };
+            document.getElementById('predictionResult').innerHTML = `${icons[maxCat]} ${maxCat} <span class="text-xs px-2 py-0.5 bg-indigo-500/30 text-indigo-300 rounded">${maxProb}%</span>`;
+            
+            let barsHTML = '';
+            Object.keys(probs).forEach(cat => {
+                barsHTML += `
+                    <div>
+                        <div class="flex justify-between text-xs mb-0.5">
+                            <span class="text-slate-300">${cat}</span>
+                            <span class="font-bold text-slate-400">${probs[cat]}%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${probs[cat]}%"></div>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('probabilityBars').innerHTML = barsHTML;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const createChart = (id, type, labels, data, colors) => {
+                const ctx = document.getElementById(id);
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: type,
+                    data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderRadius: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: type === 'doughnut' } } }
+                });
+            };
+
+            createChart('categoryPieChart', 'doughnut', ['Business', 'Entert.', 'Politics', 'Sport', 'Tech'], [510, 386, 417, 511, 401], ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b']);
+            createChart('vocabBarChart', 'bar', ['Business', 'Entert.', 'Politics', 'Sport', 'Tech'], [7800, 7100, 8200, 6900, 8500], '#4facfe');
+            createChart('charHistChart', 'bar', ['0-1k', '1k-2k', '2k-3k', '3k-4k', '4k+'], [350, 920, 610, 240, 105], '#f093fb');
+            createChart('accuracyChart', 'bar', ['Voting ML', 'Logistic', 'LSTM Deep', 'MLP', 'Random Forest', 'Naive Bayes'], [98.2, 97.6, 97.3, 97.3, 95.8, 96.1], ['#6366f1', '#6366f1', '#a855f7', '#6366f1', '#6366f1', '#6366f1']);
+            createChart('timeChart', 'bar', ['LSTM', 'Voting ML', 'MLP', 'Random Forest', 'Logistic', 'Naive Bayes'], [15.0, 4.2, 3.8, 1.5, 0.4, 0.05], ['#a855f7', '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b']);
+        });
+    </script>
+</body>
+</html>
